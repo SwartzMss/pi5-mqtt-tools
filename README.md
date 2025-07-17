@@ -1,4 +1,4 @@
-# Raspberry Pi 5de MQTT 发布/订阅 系统部署指南
+# Raspberry Pi 5 MQTT 发布/订阅 系统部署指南
 
 本项目示例演示如何在 **Raspberry Pi 5de (pi5de)** 上部署一个基于 `paho-mqtt` 的 MQTT 发布者（Publisher）和订阅者（Subscriber），用于温度数据的采集与联动。你可以在局域网内快速搭建轻量级消息系统，并结合 GPIO 控制实现自动化场景。
 
