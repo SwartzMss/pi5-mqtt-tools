@@ -30,7 +30,7 @@ class MQTTPublisher:
         topic: str,
         message: str | dict,
         qos: int = 0,
-        retain: bool = False,
+        retain: bool = True,
     ) -> None:
         """
         发布消息，需先调用 start() 建立连接。
