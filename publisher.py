@@ -1,47 +1,63 @@
 import json
 import random
-import time
-
 import paho.mqtt.client as mqtt
 
-
 class MQTTPublisher:
-    """定时发布随机温度数据或自定义消息。"""
-
-    def __init__(
-        self,
-        host: str,
-        port: int,
-        topic: str,
-        client: mqtt.Client | None = None,
-    ) -> None:
+    """
+    简单的 MQTT 发布器：
+    - 初始化时配置 Broker 地址、端口和可选 client_id
+    - 调用 start() 建立连接、调用 publish() 发布消息、调用 stop() 断开
+    """
+    def __init__(self, host: str, port: int = 1883, client_id: str | None = None) -> None:
         self.host = host
         self.port = port
-        self.topic = topic
-        self.client = client or mqtt.Client()
+        self.client = mqtt.Client(client_id=client_id) if client_id else mqtt.Client()
+        self._is_connected = False
 
-    def start(self, message: str | None = None) -> None:
-        """连接到 Broker 并发送消息。"""
-        self.client.connect(self.host, self.port, 60)
-        self.client.loop_start()
-        try:
-            if message is not None:
-                self.client.publish(self.topic, message)
-                print(f"已发布 → {self.topic}: {message}")
-            else:
-                while True:
-                    temperature = round(random.uniform(20.0, 30.0), 2)
-                    payload = json.dumps({"temperature": temperature})
-                    self.client.publish(self.topic, payload)
-                    print(f"已发布 → {self.topic}: {payload}")
-                    time.sleep(5)
-        except KeyboardInterrupt:
-            pass
-        finally:
+    def start(self, keepalive: int = 60) -> None:
+        """
+        连接到 MQTT Broker 并启动网络循环。
+        """
+        if not self._is_connected:
+            self.client.connect(self.host, self.port, keepalive)
+            self.client.loop_start()
+            self._is_connected = True
+            print(f"已连接 → {self.host}:{self.port}")
+        else:
+            print("已处于连接状态，无需重复连接")
+
+    def publish(
+        self,
+        topic: str,
+        message: str | dict,
+        qos: int = 0,
+        retain: bool = False,
+    ) -> None:
+        """
+        发布消息，需先调用 start() 建立连接。
+        :param topic: 发布主题
+        :param message: 字符串或字典（自动转换为 JSON）
+        :param qos: MQTT QoS 等级
+        :param retain: 是否保留消息
+        """
+        if not self._is_connected:
+            raise RuntimeError("发布前请先调用 start() 方法连接到 Broker")
+        payload = json.dumps(message) if isinstance(message, dict) else message
+        result = self.client.publish(topic, payload, qos=qos, retain=retain)
+        status = result[0]
+        if status == mqtt.MQTT_ERR_SUCCESS:
+            print(f"已发布 → {topic}: {payload}")
+        else:
+            print(f"发布失败，状态码：{status}")
+
+    def stop(self) -> None:
+        """
+        停止网络循环并断开与 Broker 的连接。
+        """
+        if self._is_connected:
             self.client.loop_stop()
             self.client.disconnect()
-
-
-def start_publisher(host: str, port: int, topic: str, client: mqtt.Client) -> None:
-    """兼容旧接口，按给定参数启动 ``MQTTPublisher``。"""
-    MQTTPublisher(host=host, port=port, topic=topic, client=client).start()
+            self._is_connected = False
+            print(f"已断开 → {self.host}:{self.port}")
+        else:
+            print("当前未连接，无需断开")
