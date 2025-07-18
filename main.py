@@ -1,3 +1,13 @@
+"""命令行入口：按参数发布或订阅 MQTT 消息。"""
+
+import argparse
+import time
+
+import paho.mqtt.client as mqtt
+
+from subscriber import MQTTSubscriber
+
+
 def publish_message(host: str, port: int, topic: str, message: str) -> None:
     """
     简单发布函数：连接、发布、断开
