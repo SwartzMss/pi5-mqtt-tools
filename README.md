@@ -17,8 +17,8 @@
 
 本项目通过 Python 的 `paho-mqtt` 库，展示了如何在 Raspberry Pi 5de 上：
 
-1. **订阅** 温度主题并打印或执行硬件联动（如风扇、LED）。
-2. **发布** 模拟温度数据到 MQTT 主题，实现数据上报。
+1. **订阅** MQTT 主题并打印或执行硬件联动（如风扇、LED）。
+2. **发布** 自定义消息到 MQTT 主题，实现数据上报。
 
 ---
 
@@ -38,21 +38,12 @@
 parser = argparse.ArgumentParser()
 parser.add_argument("mode", choices=["publish", "subscribe"])
 args = parser.parse_args()
-```
 
-根据参数决定创建 `MQTTPublisher` 或 `MQTTSubscriber` 实例。
-
-```python
 if args.mode == "publish":
-    pub = publisher.MQTTPublisher(
-        host=args.host,
-        port=args.port,
-        topic=args.topic,
-        client=mqtt.Client(),
-    )
-    pub.start(args.message)
+    publish_message(args.host, args.port, args.topic, args.message)
 else:
-    sub = subscriber.MQTTSubscriber(host=args.host, port=args.port, topic=args.topic)
+    sub = MQTTSubscriber(host=args.host, port=args.port)
+    sub.add_subscription(args.topic)
     sub.start()
 ```
 
@@ -60,31 +51,25 @@ else:
 
 ```python
 import json
-import time
-import random
 import paho.mqtt.client as mqtt
 
 client = mqtt.Client()
-publisher = MQTTPublisher(
-    host="192.168.1.100",
-    port=1883,
-    topic="home/sensor/temperature",
-    client=client,
-)
-
-# 发布单条自定义消息
-publisher.start('{"temperature": 23.0}')
-
-# 或循环发布随机温度
+publisher = MQTTPublisher(host="192.168.1.100", port=1883)
 publisher.start()
+publisher.publish("home/sensor/temperature", {"temperature": 23.0})
+publisher.stop()
 ```
 
-`MQTTSubscriber.on_message()` 主要逻辑：
+`MQTTSubscriber` 默认回调示例：
 
 ```python
-def on_message(client, userdata, msg):
-    data = json.loads(msg.payload.decode())
-    print(f"[{msg.topic}] 收到消息：{data}")
+def handle_message(topic: str, payload: bytes) -> None:
+    text = payload.decode(errors="ignore")
+    try:
+        data = json.loads(text)
+        print(f"[{topic}] 收到消息：{data}")
+    except json.JSONDecodeError:
+        print(f"[{topic}] 收到消息（非 JSON）：{text}")
 ```
 
 ## 部署步骤
@@ -135,7 +120,6 @@ Connected with result code 0
 ```bash
 python3 main.py publish --host 192.168.1.100 --port 1883 --topic home/sensor/temperature --message '{"temperature": 27.5}'
 ```
-若未指定 `--message`，则每隔 5 秒发布随机温度。
 
 ---
 
@@ -144,7 +128,7 @@ python3 main.py publish --host 192.168.1.100 --port 1883 --topic home/sensor/tem
 1. **结构化 JSON 消息**：发送包含时间戳、传感器 ID 的 JSON 数据。
 2. **QoS 与遗嘱消息**：提高可靠性，处理断线场景。
 3. **GPIO 联动**：收到高温报警时控制风扇或 LED。\
-   示例可在 `MQTTSubscriber.on_message()` 中添加 GPIO 控制逻辑。
+   示例可在自定义回调函数中添加 GPIO 控制逻辑。
 
 ---
 
