@@ -2,28 +2,45 @@ import json
 
 import paho.mqtt.client as mqtt
 
-BROKER_HOST = "192.168.1.100"  # 改为你的 Broker IP 或域名
-BROKER_PORT = 1883
-TOPIC = "home/sensor/temperature"
+# 默认连接参数，可在实例化 ``MQTTSubscriber`` 时覆盖
+DEFAULT_HOST = "192.168.1.100"
+DEFAULT_PORT = 1883
+DEFAULT_TOPIC = "home/sensor/temperature"
 
 
-def on_connect(client: mqtt.Client, userdata, flags, rc) -> None:
-    print(f"Connected with result code {rc}")
-    client.subscribe(TOPIC)
+class MQTTSubscriber:
+    """订阅指定主题并打印收到的消息。"""
 
+    def __init__(
+        self,
+        host: str = DEFAULT_HOST,
+        port: int = DEFAULT_PORT,
+        topic: str = DEFAULT_TOPIC,
+    ) -> None:
+        self.host = host
+        self.port = port
+        self.topic = topic
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
 
-def on_message(client: mqtt.Client, userdata, msg: mqtt.MQTTMessage) -> None:
-    try:
-        data = json.loads(msg.payload.decode())
-        print(f"[{msg.topic}] 收到消息：{data}")
-    except json.JSONDecodeError:
-        print(f"[{msg.topic}] 未能解析消息：{msg.payload}")
+    def on_connect(self, client: mqtt.Client, userdata, flags, rc) -> None:
+        print(f"Connected with result code {rc}")
+        client.subscribe(self.topic)
+
+    def on_message(self, client: mqtt.Client, userdata, msg: mqtt.MQTTMessage) -> None:
+        try:
+            data = json.loads(msg.payload.decode())
+            print(f"[{msg.topic}] 收到消息：{data}")
+        except json.JSONDecodeError:
+            print(f"[{msg.topic}] 未能解析消息：{msg.payload}")
+
+    def start(self) -> None:
+        """连接到 Broker 并持续监听。"""
+        self.client.connect(self.host, self.port, 60)
+        self.client.loop_forever()
 
 
 def start_subscriber() -> None:
-    """Listen to MQTT topic and print received messages."""
-    client = mqtt.Client()
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.connect(BROKER_HOST, BROKER_PORT, 60)
-    client.loop_forever()
+    """兼容旧接口，启动默认 ``MQTTSubscriber``。"""
+    MQTTSubscriber().start()
