@@ -1,0 +1,3 @@
+DEFAULT_HOST = "192.168.1.100"
+DEFAULT_PORT = 1883
+DEFAULT_TOPIC = "home/sensor/temperature"

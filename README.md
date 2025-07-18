@@ -45,7 +45,7 @@ args = parser.parse_args()
 ```python
 if args.mode == "publish":
     pub = publisher.MQTTPublisher(client=mqtt.Client())
-    pub.start()
+    pub.start(args.message)
 else:
     sub = subscriber.MQTTSubscriber()
     sub.start()
@@ -60,12 +60,13 @@ import random
 import paho.mqtt.client as mqtt
 
 client = mqtt.Client()
+publisher = MQTTPublisher(client=client)
 
-while True:
-    temperature = round(random.uniform(20.0, 30.0), 2)
-    payload = json.dumps({"temperature": temperature})
-    client.publish(TOPIC, payload)
-    time.sleep(5)
+# 发布单条自定义消息
+publisher.start('{"temperature": 23.0}')
+
+# 或循环发布随机温度
+publisher.start()
 ```
 
 `MQTTSubscriber.on_message()` 主要逻辑：
@@ -106,19 +107,10 @@ git clone https://github.com/yourusername/pi5-mqtt-tools.git
 cd pi5-mqtt-tools
 ```
 
-### 5. 配置 Broker 地址
-
-运行时可通过命令行参数指定 Broker 地址与端口，例如：
+### 5. 运行订阅者
 
 ```bash
-python3 main.py publish --host 192.168.1.100 --port 1883
-```
-若未指定，则默认使用 `192.168.1.100:1883`。
-
-### 6. 运行订阅者
-
-```bash
-python3 main.py subscribe --host 192.168.1.100
+python3 main.py subscribe --host 192.168.1.100 --port 1883 --topic home/sensor/temperature
 ```
 
 日志示例：
@@ -128,17 +120,12 @@ Connected with result code 0
 [home/sensor/temperature] 收到消息：25.34
 ```
 
-### 7. 运行发布者
+### 6. 运行发布者
 
 ```bash
-python3 main.py publish --host 192.168.1.100
+python3 main.py publish --host 192.168.1.100 --port 1883 --topic home/sensor/temperature --message '{"temperature": 27.5}'
 ```
-
-每隔 5 秒发布一次模拟温度：
-
-```
-已发布 → home/sensor/temperature: 27.81
-```
+若未指定 `--message`，则每隔 5 秒发布随机温度。
 
 ---
 

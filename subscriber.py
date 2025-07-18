@@ -2,10 +2,7 @@ import json
 
 import paho.mqtt.client as mqtt
 
-# 默认连接参数，可在实例化 ``MQTTSubscriber`` 时覆盖
-DEFAULT_HOST = "192.168.1.100"
-DEFAULT_PORT = 1883
-DEFAULT_TOPIC = "home/sensor/temperature"
+from config import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_TOPIC
 
 
 class MQTTSubscriber:
