@@ -6,7 +6,6 @@
 
 - [项目简介](#项目简介)
 - [组件关系](#组件关系)
-- [示例代码](#示例代码)
 - [部署步骤](#部署步骤)
 - [进阶功能](#进阶功能)
 - [许可证](#许可证)
@@ -28,49 +27,6 @@
 
 - **MQTT Broker（mosquitto）**：负责接收、存储和分发消息，是消息系统的核心服务器组件。
 - **MQTT 客户端库（paho-mqtt）**：Eclipse Paho 提供的 Python 客户端库，用于在 Publisher 和 Subscriber 中实现与 Broker 的通信，支持消息的发布（publish）和订阅（subscribe）。
-
----
-## 示例代码
-
-仓库提供 `main.py` 作为入口文件，通过命令行参数选择发布（publish）或订阅（subscribe）模式，内部调用 `publisher.py` 或 `subscriber.py` 实现逻辑。
-
-```python
-parser = argparse.ArgumentParser()
-parser.add_argument("mode", choices=["publish", "subscribe"])
-args = parser.parse_args()
-
-if args.mode == "publish":
-    publish_message(args.host, args.port, args.topic, args.message)
-else:
-    sub = MQTTSubscriber(host=args.host, port=args.port)
-    sub.add_subscription(args.topic)
-    sub.start()
-```
-
-`MQTTPublisher.start()` 主要逻辑：
-
-```python
-import json
-import paho.mqtt.client as mqtt
-
-client = mqtt.Client()
-publisher = MQTTPublisher(host="192.168.1.100", port=1883)
-publisher.start()
-publisher.publish("home/sensor/temperature", {"temperature": 23.0})
-publisher.stop()
-```
-
-`MQTTSubscriber` 默认回调示例：
-
-```python
-def handle_message(topic: str, payload: bytes) -> None:
-    text = payload.decode(errors="ignore")
-    try:
-        data = json.loads(text)
-        print(f"[{topic}] 收到消息：{data}")
-    except json.JSONDecodeError:
-        print(f"[{topic}] 收到消息（非 JSON）：{text}")
-```
 
 ## 部署步骤
 
