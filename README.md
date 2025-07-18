@@ -87,6 +87,15 @@ sudo apt install mosquitto mosquitto-clients -y
 sudo systemctl enable --now mosquitto
 ```
 
+### 使用命令行测试 MQTT（可选）
+```bash
+# 订阅主题
+mosquitto_sub -h 192.168.1.100 -p 1883 -t home/sensor/temperature
+# 发布消息
+mosquitto_pub -h 192.168.1.100 -p 1883 -t home/sensor/temperature \
+              -m '{"temperature":27.5}'
+```
+
 ### 3. 安装 Python 依赖
 
 ```bash
