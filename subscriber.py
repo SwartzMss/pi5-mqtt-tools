@@ -2,17 +2,15 @@ import json
 
 import paho.mqtt.client as mqtt
 
-from config import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_TOPIC
-
 
 class MQTTSubscriber:
     """订阅指定主题并打印收到的消息。"""
 
     def __init__(
         self,
-        host: str = DEFAULT_HOST,
-        port: int = DEFAULT_PORT,
-        topic: str = DEFAULT_TOPIC,
+        host: str,
+        port: int,
+        topic: str,
     ) -> None:
         self.host = host
         self.port = port
@@ -38,6 +36,6 @@ class MQTTSubscriber:
         self.client.loop_forever()
 
 
-def start_subscriber() -> None:
-    """兼容旧接口，启动默认 ``MQTTSubscriber``。"""
-    MQTTSubscriber().start()
+def start_subscriber(host: str, port: int, topic: str) -> None:
+    """兼容旧接口，按给定参数启动 ``MQTTSubscriber``。"""
+    MQTTSubscriber(host=host, port=port, topic=topic).start()

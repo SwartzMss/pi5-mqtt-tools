@@ -4,7 +4,11 @@ import paho.mqtt.client as mqtt
 
 import publisher
 import subscriber
-from config import DEFAULT_HOST, DEFAULT_PORT, DEFAULT_TOPIC
+
+# CLI 默认值，可根据实际部署环境调整
+DEFAULT_HOST = "192.168.1.100"
+DEFAULT_PORT = 1883
+DEFAULT_TOPIC = "home/sensor/temperature"
 
 
 def main() -> None:

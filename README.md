@@ -44,10 +44,15 @@ args = parser.parse_args()
 
 ```python
 if args.mode == "publish":
-    pub = publisher.MQTTPublisher(client=mqtt.Client())
+    pub = publisher.MQTTPublisher(
+        host=args.host,
+        port=args.port,
+        topic=args.topic,
+        client=mqtt.Client(),
+    )
     pub.start(args.message)
 else:
-    sub = subscriber.MQTTSubscriber()
+    sub = subscriber.MQTTSubscriber(host=args.host, port=args.port, topic=args.topic)
     sub.start()
 ```
 
@@ -60,7 +65,12 @@ import random
 import paho.mqtt.client as mqtt
 
 client = mqtt.Client()
-publisher = MQTTPublisher(client=client)
+publisher = MQTTPublisher(
+    host="192.168.1.100",
+    port=1883,
+    topic="home/sensor/temperature",
+    client=client,
+)
 
 # 发布单条自定义消息
 publisher.start('{"temperature": 23.0}')
