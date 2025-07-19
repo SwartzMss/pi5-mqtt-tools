@@ -27,7 +27,7 @@ def main() -> None:
     parser.add_argument(
         "mode", choices=["publish", "subscribe"], help="运行模式"
     )
-    parser.add_argument("--host", default="192.168.1.100", help="MQTT Broker 地址")
+    parser.add_argument("--host", default="127.0.0.1", help="MQTT Broker 地址")
     parser.add_argument("--port", type=int, default=1883, help="MQTT Broker 端口")
     parser.add_argument("--topic", default="#", help="MQTT 主题，支持通配符")
     parser.add_argument("--message", help="发布模式下要发送的消息")
