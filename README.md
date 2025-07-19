@@ -33,12 +33,12 @@ sudo apt install mosquitto mosquitto-clients -y
 sudo systemctl enable --now mosquitto
 ```
 
-### 使用命令行测试 MQTT（可选）
+### 使用命令行测试 MQTT
 ```bash
 # 订阅主题
-mosquitto_sub -h 192.168.1.100 -p 1883 -t home/sensor/temperature
+mosquitto_sub -h 192.168.3.203 -p 1883 -t home/sensor/temperature
 # 发布消息
-mosquitto_pub -h 192.168.1.100 -p 1883 -t home/sensor/temperature \
+mosquitto_pub -h 192.168.3.20 -p 1883 -t home/sensor/temperature \
               -m '{"temperature":27.5}'
 ```
 
@@ -60,7 +60,7 @@ cd pi5-mqtt-tools
 ### 5. 运行订阅者
 
 ```bash
-python3 main.py subscribe --host 192.168.1.100 --port 1883 --topic home/sensor/temperature
+python3 main.py subscribe --host 192.168.3.20 --port 1883 --topic home/sensor/temperature
 ```
 
 日志示例：
@@ -73,7 +73,7 @@ Connected with result code 0
 ### 6. 运行发布者
 
 ```bash
-python3 main.py publish --host 192.168.1.100 --port 1883 --topic home/sensor/temperature --message '{"temperature": 27.5}'
+python3 main.py publish --host 192.168.3.20 --port 1883 --topic home/sensor/temperature --message '{"temperature": 27.5}'
 ```
 
 ---
